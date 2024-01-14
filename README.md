@@ -1,6 +1,6 @@
 # Tennis-Club-DataBase
 
-This Tennis Club Database Application is designed to manage and organize data for a tennis club. It consists of five Python files working together to provide functionality for handling lessons, courses, reservations, athletes, and coaches.
+This Tennis Club Database Application is designed to manage and organize data for a tennis club. It consists of five Python files working together to provide functionality for handling lessons, courses, reservations, equipment, athletes, and coaches.
 
 Contributors: Papadopoulou Maria, Verykokkou Nektaria
 

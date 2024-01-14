@@ -1,0 +1,423 @@
+\documentclass[manuscript,screen,review]{acmart}
+\usepackage{graphicx}
+\usepackage[main = greek, english]{babel}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{float}
+
+\newcommand{\en}[1]{\foreignlanguage{english}{#1}}
+\newcommand{\src}[1]{{\tt\en{#1}}}
+
+\begin{document}
+\title{Εφαρμογή \en{Tennis Club}\\Ομαδική Εργασία στο μάθημα Βάσεις Δεδομένων - Ακαδημαϊκό Έτος 2023-24}
+\author{Νεκταρία Βερυκόκκου (1083853), Μαρία Παπαδοπούλου (1083849)}
+\authornote{Η εργασία αποτελεί προϊόν ισάξιας συνεισφοράς των συγγραφέων.}
+\affiliation{\\Τμήμα Ηλεκτρολόγων Μηχανικών και Τεχνολογίας Υπολογιστών}
+\begin{abstract}
+    \en{Command Line Interface} εφαρμογή για διαχείρηση από γραμματεία
+    \\Βάση Δεδομένων για διαχείρηση μελών, γηπέδων, κρατήσεων, μαθημάτων, αγώνων και εξοπλισμού
+\end{abstract}
+\keywords{\en{SQL}, βάση δεδομένων, διάγραμμα οντοτήτων-συσχετίσεων, σχεσιακό σχήμα, επικοινωνία με τη βάση}
+
+\maketitle
+
+\newpage
+\section{Περιγραφή Προβλήματος}
+\subsection{Περίληψη - Υποθετικό Σενάριο}
+Για την ανάπτυξη της εργασίας μας υποθέσαμε ότι ένα \en{Tennis Club} μας ζήτησε να δημιουργήσουμε ένα σύστημα με το οποίο η γραμματεία θα παρακολουθεί και θα διαχειρίζεται τις ενέργειες και εγκαταστάσεις του. Μερικές από τις ανάγκες του \en{club} είναι η διαχείρηση μελών (αθλητών και προπονητών), πακέτων, μαθημάτων, κρατήσεων, γηπέδων, αγορών εξοπλισμού και αγώνων. 
+\\Ουσιαστικά, ζητείται από το \en{club} η εύκολη πρόσβαση στην τρέχουσα κατάσταση των μελών και εγκαταστάσεών του και στις συμμετοχές σε μαθήματα και αγώνες ώστε να μπορούν να τα διαχειρίζονται αποτελεσματικά.\\Κάτι τέτοιο είναι εφικτό με τον σχεδιασμό μιας σχεσιακής βάσης δεδομένων, οργανωμένης κατάλληλα, ώστε να αναδείξει τις σχέσεις και λειτουργίες μεταξύ αυτών των στοιχείων. 
+
+\subsection{Έλεγχοι που υλοποιούνται}
+Για τη σωστή λειτουργία, φροντίσαμε να γίνονται οι παρακάτω έλεγοι:
+\begin{enumerate}
+    \item Οι αθλητές να συμμετέχουν σε μαθήματα ανάλογα με το \en{level} τους, τα οποία πραγματοποιούνται από προπονητές με αντίστοιχη ειδικότητα.
+    \item Να μην επιτρέπεται η εγγραφή αθλητή σε μάθημα αφού έχει καλυφθεί ο μέγιστος αριθμός συμμετεχόντων.
+    \item Να είναι εφικτή η ανανέωση ενός μαθήματος ή μίας κράτησης σε περίπτωση ακύρωσης
+    \item Να γίνεται καταχώρηση νέου μαθήματος μόνο αν επιτρέπεται από τη διαθεσιμότητα γηπέδων/προπονητών. Εναλλακτικά, να εμφανίζεται μήνυμα που ζητά αλλαγή των στοιχείων που δεν την επιτρέπουν.
+    \item Να γίνεται έλεγχος όλων των εισαγωγών, ώστε ο χρήστης να δίνει πάντα σωστό τύπο δεδομένων
+\end{enumerate}
+
+\subsection{Στοιχεία Μικρόκοσμου - \en{ERD}}
+Ο μικρόκοσμος του \en{Tennis Club} αποτελείται από τα παρακάτω στοιχεία:
+\begin{enumerate}
+    \item Μέλη
+    \begin{itemize}
+        \item Όνομα, Επώνυμο
+        \item Τηλέφωνο, \en{email}
+        \item Διεύθυνση
+        \item Ημερομηνία γέννησης
+        \item Ημερομηνία εγγραφής
+        \begin{enumerate}
+            \item Αθλητές
+            \begin{itemize}
+                \item \en{ID}
+                \item Επίπεδο
+                \item Πακέτο, ημερομηνίες έναρξης / λήξης
+            \end{itemize}
+            \item Προπονητές
+            \begin{itemize}
+                \item \en{ID}
+                \item Ειδικότητα
+            \end{itemize}
+        \end{enumerate}
+    \end{itemize}
+    \item Γήπεδα
+    \begin{itemize}
+        \item \en{ID}
+        \item Επιφάνεια
+    \end{itemize}
+    \item Κρατήσεις γηπέδων
+    \begin{itemize}
+        \item Μέλος που έκανε την κράτηση
+        \item Ημερομηνία, ώρα
+        \item Διάρκεια
+        \item Ακυρώσεις - επαναπρογραμματισμός
+    \end{itemize}
+    \item Τμήματα μαθημάτων
+    \begin{itemize}
+        \item \en{ID}
+        \item Μέρα, ώρα, ημερομηνία
+        \item Διάρκεια
+        \item Γήπεδο
+        \item Μέγιστος αριθμός συμμετεχόντων
+        \item Ακυρώσεις - επαναπρογραμματισμός
+    \end{itemize}
+    \item Αγώνες
+    \begin{itemize}
+        \item \en{ID}
+        \item Ημερομηνία, ώρα
+        \item Διάρκεια
+        \item Γήπεδο
+        \item Συμμετέχοντες, αριθμός συμμετεχόντων
+        \item Βαθμολογία ομάδων        
+    \end{itemize}
+    \item Πακέτα
+    \begin{itemize}
+        \item \en{ID}
+        \item Τύπος
+    \end{itemize}   
+    \item Εξοπλισμός
+    \begin{itemize}
+        \item \en{ID}
+        \item Αγοραστής, ποσότητα, ημερομηνία αγοράς
+    \end{itemize}
+\end{enumerate}
+
+
+Οι σχέσεις μεταξύ των στοιχείων είναι:
+\begin{enumerate}
+    \item Ένα μέλος μπορεί να κάνει πολλές κρατήσεις
+    \item Μια κράτηση, ένα μάθημα ή ένας αγώνας μπορεί να δεσμεύσει ένα γήπεδο
+    \item Τα τμήματα μαθημάτων περιέχουν μαθήματα με συγκεκριμένες ημερομηνίες
+    \item Ένας αθλητής μπορεί να συμμετέχει σε πολλά μαθήματα και αγώνες
+    \item Ένας προπονητής μπορεί να διδάσκει πολλά μαθήματα
+    \item Ένας αθλητής επιλέγει ένα πακέτο
+    \item Ένας αθλητής μπορεί να αγοράσει πολλά είδη εξοπλισμού
+\end{enumerate}
+
+\newpage
+
+\noindent
+Οι οντότητες, τα γνωρίσματα και οι σχέσεις τους φαίνονται στο σχήμα \en{erd}, το οποίο σχεδιάσαμε με την \en{online} εφαρμογή \en{ece.upatras.gr/erdmaker/designer}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{tennis_club_erd.png}
+    \caption{Διάγραμμα οντοτήτων-συσχετίσεων του \en{Tennis Club}}
+    \label{fig:enter-label}
+\end{figure}
+
+
+
+\subsection{Σχεσιακό Μοντέλο}
+Με βάση το \en{erd} κατασκευάσαμε το σχεσιακό μοντέλο με την \en{online} εφαρμογή \en{schemamaker.fly.dev/schema\_builder}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{schema.png}
+    \caption{Σχεσιακό μοντέλο του \en{Tennis Club}}
+    \label{fig:enter-label}
+\end{figure}
+
+\section{Μεθοδολογία}
+\subsection{Προσέγγιση - Κύριες ενέργειες}
+Αρχικά αναζητήσαμε \en{online} ιστοσελίδες \en{Tennis Club}, για να κατανοήσουμε τις ανάγκες της βάσης δεδομένων. Αφού αποκτήσαμε μια γενική εικόνα, σκεφτήκαμε τις οντότητες και τις σχέσεις που θα μπορούσαν να καλύψουν τις ανάγκες αυτές και προχωρήσαμε στο σχεδιασμό του διαγράμματος σχέσεων οντοτήτων \en{erd}. Με βάση αυτό, σχεδιάσαμε τη δομή της βάσης δεδομένων μέσω του σχεσιακού μοντέλου και ξεκινήσαμε τη δημιουργία του προγράμματος.
+
+\subsection{Χωρισμός τμημάτων}
+Ξεκινήσαμε βλέποντας διαφορετικά κομμάτια της εργασίας. Η μία ασχολήθηκε με τα αρχεία που δημιουργούν τη βάση και φορτώνουν τα δεδομένα και το αρχείο με τα παραδείγματα των τυπικών αναζητήσεων, ενώ η άλλη με το πρόγραμμα επεξεργασίας της βάσης και επικοινωνίας με το χρήστη. Στη συνέχεια, προχωρήσαμε βλέποντας παράλληλα όλα τα αρχεία, για να προκύψει το τελικό πρόγραμμα.
+
+\subsubsection{Νεκταρία Βερυκόκκου}
+\begin{itemize}
+    \item Σχεσιακό μοντέλο
+    \item Πρόγραμμα επικοινωνίας με τον χρήστη και επεξεργασίας των δεδομένων της βάσης
+\end{itemize}
+
+\subsubsection{Μαρία Παπαδοπούλου}
+\begin{itemize}
+    \item Διάγραμμα οντοτήτων-συσχετίσεων
+    \item Πρόγραμμα δημιουργία της βάσης, πρόγραμμα φόρτωσης δεδομένων στη βάση, πρόγραμμα τυπικών αναζητήσεων
+\end{itemize}
+
+\section{Αξιολόγηση}
+Η εφαρμογή μπορεί:
+\begin{itemize}
+    \item Nα δημιουργεί νέα μέλη, να επεξεργάζεται τα στοιχεία υπάρχοντων μελών και να τα διαγράφει.
+    \item Να δημιουργεί νέες κρατήσεις γηπέδων, να ακυρώνει και να επαναπρογραμματίζει υπάρχουσες και να εμφανίζει σε λίστα όλες τις κρατήσεις για δεδομένες ημερομηνίες.
+    \item Να δημιουργεί νέα μαθήματα, να ακυρώνει και να επαναπρογραμματίζει υπάρχοντα, να εμφανίζει σε λίστα όλα τα μαθήματα για δεδομένες ημερομηνίες και να δημιουργεί νέο εβδομαδιαίο πρόγραμμα μαθημάτων. 
+    \item Να δημιουργεί νέους αγώνες, να ακυρώνει υπάρχοντες, να καταγράφει τη βαθμολογία και τους νικητές των αγώνων και να εμφανίζει σε λίστα όλους τους αγώνες για δεδομένες ημερομηνίες.
+    \item Να καταγράφει τις αγορές εξοπλισμού από τους αθλητές.
+    \item Να εμφανίζει τυπικές αναζητήσεις στη βάση δεδομένων.
+\end{itemize}
+
+Η εφαρμογή καλύπτει ικανοποιητικό μέρος των αναγκών μιας βάσης δεδομένων ενός \en{Tennis Club}, για τα πλαίσια της εργασίας μας. Ξεκινώντας την εργασία είχαμε και άλλες ιδέες που δυστυχώς δεν μπορέσαμε να υλοποιήσουμε στο χρονικό περιθώριο, ωστόσο είμαστε ικανοποιημένες με τη σωστή και αποτελεσματική λειτουργία της βάσης.
+
+\subsection{Χρονοδιάγραμμα}
+Τον Νοέμβριο ασχοληθήκαμε με την καταγραφή του μικρόκοσμου και τη δημιουργία του διαγράμματος οντοτήτων-συσχετίσεων και του σχεσιακού μοντέλου. Ξεκινήσαμε τη δημιουργία των προγραμμάτων μέσα στον Δεκέμβριο και την ένωση και ολοκλήρωσή τους από αρχές Ιανουρίου. 
+
+\section{Δεδομένα}
+Για τη δημιουργία των περισσότερων δεδομένων χρησιμοποιήσαμε το \en{online} εργαλείο \en{Mockaroo} και το \en{chatGPT} για τη λίστα ελληνικών ονομάτων και διευθύνσεων. Επεξεργαστήκαμε κάποια δεδομένα με \en{excel} και τους δώσαμε κατάλληλη μορφή για να φορτωθούν στη βάση. Επιπλέον, κάποια δεδομένα μαθημάτων και αθλητών δημιουργήθηκαν με συναρτήσεις με βάση τα υπάρχοντα.
+
+
+
+\section{Πρόγραμμα}
+Για τη δημιουργία της εφαρμογής χρησιμοποιήσαμε τη γλώσσα \en{python}. Η εφαρμογή αποτελείται από 5 αρχεία.
+
+
+\subsection{\en{tennis\_club\_data\_base.py} - Κύριο πρόγραμμα}
+Κύριο πρόγραμμα που ενώνει τα υπόλοιπα αρχεία. 
+
+\subsection{\en{tennis\_club.py} - Δημιουργία βάσης δεδομένων}
+Χρησιμοποιεί τη βιβλιοθήκη \en{sqlite3}, συνδέεται με τη βάση δεδομένων "\en{tennis\_club\_db.db}" και εκτελεί τα \en{queries} δημιουργίας των πινάκων της βάσης.
+
+\subsection{\en{tennis\_club\_fill.py} - Εισαγωγή δεδομένων στη βάση}
+Χρησιμοποιεί τη βιβλιοθήκη \en{sqlite3}, για να γεμίσει με τα κατάλληλα \en{queries} τους πίνακες της βάσης με δεδομένα. Οι συναρτήσεις \en{create\_lessons(), fill\_courses()}, που δημιουργούν τα δεδομένα των μαθημάτων και της συμμετοχής αθλητών σε μαθήματα, περιέχουν επιπλέον κατάλληλους ελέγχους. 
+
+\subsection{\en{edit\_db.py} - Διεπαφή με τον χρήστη και επεξεργασία της βάσης}
+Χρησιμοποιεί τη βιβλιοθήκη \en{sqlite3} για την επικοινωνία με τη βάση. Αποτελεί τη διεπαφή με τον χρήστη (γραμματεία του \en{Tennis Club}) και περιέχει συναρτήσεις μέσω των οποίων μπορεί να επεξεργαστεί τα στοιχεία της βάσης, να προσθέσει νέα και να διαγράψει υπάρχοντα. Επιπλέον, χρησιμοποιεί τη βιβλιοθήκη \en{tabulate} για την εμφάνιση των δεδομένων.
+
+\subsection{\en{tennis\_club\_queries.py} - Παραδείγματα τυπικών αναζητήσεων}
+Χρησιμοποιεί τη βιβλιοθήκη \en{sqlite3} για την επικοινωνία με τη βάση. Περιέχει συναρτήσεις με \en{queries} κάποιων τυπικών αναζητήσεων στη βάση, όπως ποσοστά δεδομένων, διαθεσιμότητες κ.ά. Το αρχείο καλείται μέσω του \en{edit\_db.py}.
+
+\section{Βιβλιογραφία}
+\begin{itemize}
+    \item \en{https://hci.ece.upatras.gr/erdmaker/designer}
+    \item \en{https://schemamaker.fly.dev/schema\_builder}
+    \item \en{https://www.mockaroo.com/schemas}
+    \item \en{https://eclass.upatras.gr/modules/units/?course=EE766}
+    \item \en{https://www.tutorialspoint.com/sqlite/sqlite\_python}
+\end{itemize}
+
+
+\newpage
+\section{Παράρτημα}
+
+\subsection{Οδηγίες εγκατάστασης}
+
+Στον φάκελο που περιέχει τα προγράμματα, τρέχουμε τις εντολές:
+\selectlanguage{english}
+    \begin{lstlisting}
+        pip install sqlite3
+        pip install tabulate
+    \end{lstlisting}
+    \selectlanguage{greek}
+
+Στη συνέχεια τρέχουμε το αρχείο \en{tennis\_club\_data\_base.py}. \\Εμφανίζεται το αρχικό \en{menu} και ακολουθούμε τις οδηγίες για τη λειτουργία που μας ενδιαφέρει.
+
+\subsection{Παραδείγματα λειτουργίας}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{screenshot1.jpg}
+    \caption{Έκκίνηση εφαρμογής - Βασικό μενού}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{new_member_2.jpg}
+    \caption{Δημιουργία νέου μέλους}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{new_member_3.jpg}
+    \caption{Επιλογή τμήματος μαθημάτων και καταχώρηση νέου μέλους}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{delete_member.jpg}
+    \caption{Διαγραφή μέλους}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{edit_details.jpg}
+    \caption{Επεξεργασία στοιχείων μέλους}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{reservation.jpg}
+    \caption{Δημιουργία νέας κράτησης και παράδειγμα ελέγχου \en{user input}}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{reschedule_reservation.jpg}
+    \caption{Ακύρωση και επαναπρογραμματισμός κράτησης}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{reservation-list.jpg}
+    \caption{Λίστα καταχωρημένων κρατήσεων σε ορισμένο διάστημα ημερών}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{new_lesson.jpg}
+    \caption{Καταχώρηση νέου μαθήματος}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{cancel_lesson.jpg}
+    \caption{Ακύρωση και επαναπρογραμματισμός μαθήματος}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{lesson-list.jpg}
+    \caption{Λίστα καταχωρημένων μαθημάτων σε ορισμένο διάστημα ημερών}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{generate_schedule_1.jpg}
+    \caption{Δημιουργία 1ου μαθήματος νέου εβδομαδιαίου προγράμματος}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{generate_schedule_2.jpg}
+    \caption{Δημιουργία 2ου μαθήματος νέου εβδομαδιαίου προγράμματος}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{new_match.jpg}
+    \caption{Καταχώρηση νέου αγώνα}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{cancel_match.png}
+    \caption{Ακύρωση αγώνα}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{score.jpg}
+    \caption{Εισαγωγή βαθμολογίας αγώνα}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{match-list.jpg}
+    \caption{Λίστα καταχωρημένων αγώνων σε ορισμένο διάστημα ημερών}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{equipment.jpg}
+    \caption{Καταχώρηση αγοράς εξοπλισμού}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{query_menu.jpg}
+    \caption{\en{Menu} τυπικών αναζητήσεων}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{query_1.jpg}
+    \caption{Τυπική ανάζήτηση: Αθλητές με ενεργές συνδρομές}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{query_2.jpg}
+    \caption{Τυπική ανάζήτηση: Ποσοστό αθλητών με ορισμένο \en{level}}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{query_3.jpg}
+    \caption{Τυπική ανάζήτηση: Διαθέσιμα γήπεδα για ορισμένη ημερομηνία και ώρα}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{query_4.jpg}
+    \caption{Τυπική ανάζήτηση: Είδη εξοπλισμού και είδος που έχει αγοραστεί περισσότερο}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{query_5.jpg}
+    \caption{Τυπική ανάζήτηση: Μέση ηλικία αθλητών}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{query_6.jpg}
+    \caption{Τυπική ανάζήτηση: Αθλητής με περισσότερες νίκες}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{query_7.jpg}
+    \caption{Τυπική ανάζήτηση: Ποσοστά πακέτων στους αθλητές}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{query_8.jpg}
+    \caption{Τυπική ανάζήτηση: Ποσοστό επαναπρογραμματισμένων μαθημάτων ανά μέλος}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsection{Σύνδεσμοι}
+\en{Github}: \\
+\en{https://github.com/maria-paps/Tennis-Club-DataBase}\\
+\en{https://github.com/NektariaVer/Tennis-Club-Database-Application}
+
+\end{document}
+
